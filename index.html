@@ -861,12 +861,54 @@
             fileInput.value = '';
         });
 
+        const PLACEHOLDER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Crect x='3' y='3' width='18' height='18' rx='4'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E";
+
         function formatBytes(bytes) {
             if (!bytes || bytes === 0) return '0 Bytes';
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function generateThumbnailBlobUrl(file) {
+            try {
+                let bitmap;
+                if ('createImageBitmap' in window) {
+                    try {
+                        bitmap = await createImageBitmap(file);
+                    } catch (e) {
+                        bitmap = null;
+                    }
+                }
+                if (bitmap) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 100;
+                    canvas.height = 100;
+                    const ctx = canvas.getContext('2d');
+
+                    const bw = bitmap.width;
+                    const bh = bitmap.height;
+                    let sx = 0, sy = 0, sw = bw, sh = bh;
+                    if (bw > bh) {
+                        sw = bh;
+                        sx = (bw - bh) / 2;
+                    } else if (bh > bw) {
+                        sh = bw;
+                        sy = (bh - bw) / 2;
+                    }
+
+                    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, 100, 100);
+                    if (typeof bitmap.close === 'function') bitmap.close();
+
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.7));
+                    canvas.width = 0; canvas.height = 0;
+                    if (blob) return URL.createObjectURL(blob);
+                }
+            } catch (err) {
+                console.warn('Thumbnail generation fallback:', err);
+            }
+            return URL.createObjectURL(file);
         }
 
         function handleFiles(files) {
@@ -880,10 +922,10 @@
             controlPanel.classList.remove('hidden');
             totalSummaryBanner.classList.add('hidden');
 
+            const newItems = [];
             validImages.forEach(file => {
                 const itemID = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                 const originalDate = new Date(file.lastModified).toLocaleString();
-                const thumbUrl = URL.createObjectURL(file);
 
                 const itemData = {
                     id: itemID,
@@ -892,17 +934,39 @@
                     type: file.type || getMimeFromExtension(file.name),
                     lastModified: file.lastModified,
                     fileObject: file,
-                    thumbUrl: thumbUrl,
+                    thumbUrl: PLACEHOLDER_SVG,
+                    isCustomThumb: false,
                     finalBlob: null,
                     processed: false,
                     lastProcessedQuality: null
                 };
                 imageQueue.push(itemData);
+                newItems.push(itemData);
                 renderItemElement(itemData, originalDate);
             });
 
             downloadZipBtn.disabled = true;
             downloadFilesBtn.disabled = true;
+
+            loadThumbnailsInBatches(newItems);
+        }
+
+        async function loadThumbnailsInBatches(items) {
+            const BATCH_SIZE = 5;
+            for (let i = 0; i < items.length; i += BATCH_SIZE) {
+                const chunk = items.slice(i, i + BATCH_SIZE);
+                await Promise.all(chunk.map(async (item) => {
+                    if (!imageQueue.find(q => q.id === item.id)) return;
+                    const thumbUrl = await generateThumbnailBlobUrl(item.fileObject);
+                    item.thumbUrl = thumbUrl;
+                    item.isCustomThumb = true;
+                    const imgEl = document.getElementById(`thumb-${item.id}`);
+                    if (imgEl) {
+                        imgEl.src = thumbUrl;
+                    }
+                }));
+                await new Promise(r => setTimeout(r, 10));
+            }
         }
 
         function getMimeFromExtension(filename) {
@@ -915,13 +979,14 @@
         }
 
         function renderItemElement(item, dateStr) {
+            const safeName = item.name.replace(/"/g, '&quot;');
             const row = document.createElement('div');
             row.className = 'queue-item';
             row.id = item.id;
             row.innerHTML = `
             <div class="queue-item-left">
                 <div class="queue-file-meta">
-                    <img src="${item.thumbUrl}" class="item-thumb" alt="${item.name}">
+                    <img src="${item.thumbUrl}" id="thumb-${item.id}" class="item-thumb" alt="${safeName}" loading="lazy">
                     <div class="item-info">
                         <div class="item-name">${item.name}</div>
                         <div class="item-metrics">
@@ -988,10 +1053,14 @@
                     item.lastProcessedQuality = currentQuality;
                 } catch (err) {
                     console.error("Compression error:", err);
-                    if (badgeEl) badgeEl.innerText = "Error";
+                    if (badgeEl) {
+                        badgeEl.className = "badge badge-danger";
+                        badgeEl.innerText = "Error";
+                    }
                 }
 
-                await new Promise(resolve => setTimeout(resolve, 10));
+                // Yield to main thread & allow browser garbage collection
+                await new Promise(resolve => setTimeout(resolve, 30));
             }
 
             progressBar.style.width = '100%';
@@ -1045,9 +1114,124 @@
             totalSummaryBanner.classList.remove('hidden');
         }
 
+        async function loadImageSource(file) {
+            if ('createImageBitmap' in window) {
+                try {
+                    return await createImageBitmap(file);
+                } catch (e) {
+                    console.warn('createImageBitmap fallback:', e);
+                }
+            }
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(img);
+                };
+                img.onerror = (err) => {
+                    URL.revokeObjectURL(url);
+                    reject(err);
+                };
+                img.src = url;
+            });
+        }
+
+        async function compressOnCanvas(imageSource, quality, targetMime = 'image/jpeg') {
+            const MAX_CANVAS_DIM = 4096;
+            let width = imageSource.width || imageSource.naturalWidth;
+            let height = imageSource.height || imageSource.naturalHeight;
+
+            if (!width || !height) {
+                if (typeof imageSource.close === 'function') imageSource.close();
+                throw new Error("Invalid image dimensions");
+            }
+
+            if (width > MAX_CANVAS_DIM || height > MAX_CANVAS_DIM) {
+                if (width > height) {
+                    height = Math.round((height * MAX_CANVAS_DIM) / width);
+                    width = MAX_CANVAS_DIM;
+                } else {
+                    width = Math.round((width * MAX_CANVAS_DIM) / height);
+                    height = MAX_CANVAS_DIM;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: false });
+
+            if (targetMime === 'image/jpeg') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            ctx.drawImage(imageSource, 0, 0, width, height);
+
+            if (typeof imageSource.close === 'function') {
+                imageSource.close();
+            }
+
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob((b) => resolve(b), targetMime, quality);
+            });
+
+            canvas.width = 0;
+            canvas.height = 0;
+
+            if (!blob) {
+                throw new Error("Canvas compression returned empty blob");
+            }
+
+            return blob;
+        }
+
+        async function compressPNGWithUPNG(file, quality) {
+            if (typeof UPNG === 'undefined') {
+                throw new Error("UPNG library not loaded");
+            }
+
+            const imageSource = await loadImageSource(file);
+            let w = imageSource.width || imageSource.naturalWidth;
+            let h = imageSource.height || imageSource.naturalHeight;
+
+            const MAX_CANVAS_DIM = 4096;
+            if (w > MAX_CANVAS_DIM || h > MAX_CANVAS_DIM) {
+                if (w > h) {
+                    h = Math.round((h * MAX_CANVAS_DIM) / w);
+                    w = MAX_CANVAS_DIM;
+                } else {
+                    w = Math.round((w * MAX_CANVAS_DIM) / h);
+                    h = MAX_CANVAS_DIM;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(imageSource, 0, 0, w, h);
+
+            if (typeof imageSource.close === 'function') {
+                imageSource.close();
+            }
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            canvas.width = 0;
+            canvas.height = 0;
+
+            let cnum = 0;
+            if (quality < 0.98) {
+                cnum = Math.max(16, Math.round(256 * quality));
+            }
+
+            const compressedArrayBuffer = UPNG.encode([imgData.data.buffer], w, h, cnum);
+            return new Uint8Array(compressedArrayBuffer);
+        }
+
         /**
-         * Core Compression Engine:
-         * Preserves original file format (PNG -> PNG, JPG -> JPG, WEBP -> WEBP) and alpha transparency.
+         * Core Compression Engine: Memory-optimized for 100+ high-res mobile photos
          */
         async function compressItem(item, quality) {
             const isJpeg = item.type === 'image/jpeg' || item.name.match(/\.(jpg|jpeg)$/i);
@@ -1056,37 +1240,44 @@
 
             let targetMime = item.type || (isPng ? 'image/png' : (isWebp ? 'image/webp' : 'image/jpeg'));
 
-            const originalDataUrl = await readFileAsDataURL(item.fileObject);
             let finalUint8Array = null;
             let finalMime = targetMime;
 
             if (isPng) {
                 try {
-                    finalUint8Array = await compressPNGWithUPNG(originalDataUrl, quality);
+                    finalUint8Array = await compressPNGWithUPNG(item.fileObject, quality);
                     finalMime = 'image/png';
                 } catch (err) {
-                    const dataUrl = await compressOnCanvas(originalDataUrl, quality, 'image/png');
-                    finalUint8Array = dataURLtoUint8Array(dataUrl);
+                    console.warn('UPNG fallback to Canvas PNG:', err);
+                    const imageSource = await loadImageSource(item.fileObject);
+                    const blob = await compressOnCanvas(imageSource, quality, 'image/png');
+                    const buffer = await blob.arrayBuffer();
+                    finalUint8Array = new Uint8Array(buffer);
+                    finalMime = 'image/png';
                 }
             } else if (isJpeg) {
-                const dataUrl = await compressOnCanvas(originalDataUrl, quality, 'image/jpeg');
-                const compressedBlob = dataURLtoBlob(dataUrl);
+                const imageSource = await loadImageSource(item.fileObject);
+                const compressedBlob = await compressOnCanvas(imageSource, quality, 'image/jpeg');
 
                 try {
-                    const arrayBuffer = await item.fileObject.arrayBuffer();
-                    const originalBytes = new Uint8Array(arrayBuffer);
+                    const originalBuffer = await item.fileObject.arrayBuffer();
+                    const originalBytes = new Uint8Array(originalBuffer);
                     const originalAppSegments = extractAppSegments(originalBytes);
+
                     const compressedBuffer = await compressedBlob.arrayBuffer();
                     const compressedBytes = new Uint8Array(compressedBuffer);
+
                     finalUint8Array = injectAppSegments(compressedBytes, originalAppSegments);
                 } catch (e) {
-                    finalUint8Array = await piexifFallback(originalDataUrl, dataUrl);
+                    console.warn('EXIF injection fallback:', e);
+                    const buffer = await compressedBlob.arrayBuffer();
+                    finalUint8Array = new Uint8Array(buffer);
                 }
                 finalMime = 'image/jpeg';
             } else {
-                const dataUrl = await compressOnCanvas(originalDataUrl, quality, targetMime);
-                const blob = dataURLtoBlob(dataUrl);
-                const buffer = await blob.arrayBuffer();
+                const imageSource = await loadImageSource(item.fileObject);
+                const compressedBlob = await compressOnCanvas(imageSource, quality, targetMime);
+                const buffer = await compressedBlob.arrayBuffer();
                 finalUint8Array = new Uint8Array(buffer);
                 finalMime = targetMime;
             }
@@ -1143,96 +1334,6 @@
             if (dlBtn) dlBtn.classList.remove('hidden');
         }
 
-        function compressPNGWithUPNG(dataUrl, quality) {
-            return new Promise((resolve, reject) => {
-                if (typeof UPNG === 'undefined') {
-                    return reject(new Error("UPNG library not loaded"));
-                }
-                const img = new Image();
-                img.onload = () => {
-                    let w = img.naturalWidth;
-                    let h = img.naturalHeight;
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-
-                    const imgData = ctx.getImageData(0, 0, w, h);
-                    const buffer = imgData.data.buffer;
-
-                    let cnum = 0;
-                    if (quality < 0.98) {
-                        cnum = Math.max(16, Math.round(256 * quality));
-                    }
-
-                    try {
-                        const compressedArrayBuffer = UPNG.encode([buffer], w, h, cnum);
-                        resolve(new Uint8Array(compressedArrayBuffer));
-                    } catch (e) {
-                        reject(e);
-                    }
-                };
-                img.onerror = reject;
-                img.src = dataUrl;
-            });
-        }
-
-        function compressOnCanvas(dataUrl, quality, targetMime = 'image/jpeg') {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => {
-                    let width = img.naturalWidth;
-                    let height = img.naturalHeight;
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-
-                    if (targetMime === 'image/jpeg') {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, width, height);
-                    }
-
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const result = canvas.toDataURL(targetMime, quality);
-                    canvas.width = 0; canvas.height = 0;
-                    resolve(result);
-                };
-                img.onerror = reject;
-                img.src = dataUrl;
-            });
-        }
-
-        function readFileAsDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function dataURLtoBlob(dataurl) {
-            const arr = dataurl.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) { u8arr[n] = bstr.charCodeAt(n); }
-            return new Blob([u8arr], { type: mime });
-        }
-
-        function dataURLtoUint8Array(dataurl) {
-            const bstr = atob(dataurl.split(',')[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) { u8arr[n] = bstr.charCodeAt(n); }
-            return u8arr;
-        }
-
         function extractAppSegments(bytes) {
             const segments = [];
             if (!bytes || bytes.length < 2 || bytes[0] !== 0xFF || bytes[1] !== 0xD8) return segments;
@@ -1284,21 +1385,9 @@
             return result;
         }
 
-        async function piexifFallback(originalDataUrl, compressedDataUrl) {
-            try {
-                if (typeof piexif === 'undefined') return dataURLtoUint8Array(compressedDataUrl);
-                const exifObj = piexif.load(originalDataUrl);
-                const exifBytes = piexif.dump(exifObj);
-                const finalDataUrl = piexif.insert(exifBytes, compressedDataUrl);
-                return dataURLtoUint8Array(finalDataUrl);
-            } catch (err) {
-                return dataURLtoUint8Array(compressedDataUrl);
-            }
-        }
-
         window.removeSingleItem = function (id) {
             const itemToRemove = imageQueue.find(i => i.id === id);
-            if (itemToRemove && itemToRemove.thumbUrl) {
+            if (itemToRemove && itemToRemove.thumbUrl && itemToRemove.isCustomThumb) {
                 URL.revokeObjectURL(itemToRemove.thumbUrl);
             }
             imageQueue = imageQueue.filter(i => i.id !== id);
@@ -1316,7 +1405,7 @@
 
         clearAllBtn.addEventListener('click', function () {
             imageQueue.forEach(item => {
-                if (item.thumbUrl) URL.revokeObjectURL(item.thumbUrl);
+                if (item.thumbUrl && item.isCustomThumb) URL.revokeObjectURL(item.thumbUrl);
             });
             imageQueue = [];
             imageList.innerHTML = '';
@@ -1347,12 +1436,14 @@
                 const zipContent = await zip.generateAsync({ type: 'blob' });
                 const zipFilename = "compressed_images.zip";
 
+                const url = URL.createObjectURL(zipContent);
                 const element = document.createElement('a');
-                element.href = URL.createObjectURL(zipContent);
+                element.href = url;
                 element.download = zipFilename;
                 document.body.appendChild(element);
                 element.click();
                 document.body.removeChild(element);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
             } catch (err) {
                 console.error("ZIP Generation error:", err);
             } finally {
@@ -1371,12 +1462,14 @@
             try {
                 for (let i = 0; i < processedItems.length; i++) {
                     const item = processedItems[i];
+                    const url = URL.createObjectURL(item.finalBlob);
                     const a = document.createElement('a');
-                    a.href = URL.createObjectURL(item.finalBlob);
+                    a.href = url;
                     a.download = item.finalBlob.name;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
                     await new Promise(r => setTimeout(r, 200));
                 }
             } catch (err) {
@@ -1391,12 +1484,14 @@
             const item = imageQueue.find(i => i.id === id);
             if (!item || !item.finalBlob) return;
 
+            const url = URL.createObjectURL(item.finalBlob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(item.finalBlob);
+            a.href = url;
             a.download = item.finalBlob.name;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
         };
     </script>
 
