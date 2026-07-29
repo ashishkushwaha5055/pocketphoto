@@ -274,6 +274,14 @@
             cursor: pointer;
             height: 6px;
             border-radius: 10px;
+            transition: none !important;
+        }
+
+        input[type="range"]::-webkit-slider-thumb,
+        input[type="range"]::-moz-range-thumb,
+        .split-slider-handle,
+        .split-slider-knob {
+            transition: none !important;
         }
 
         .preset-pills {
@@ -338,6 +346,48 @@
 
         .btn-danger {
             background-color: var(--accent-rose);
+        }
+
+        /* Download Buttons Attention Blink Animation */
+        @keyframes downloadZipBlink {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 22px rgba(16, 185, 129, 0.85);
+                filter: brightness(1.2);
+            }
+        }
+
+        @keyframes downloadFilesBlink {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 22px rgba(14, 165, 233, 0.85);
+                filter: brightness(1.2);
+            }
+        }
+
+        #downloadZipBtn:not(:disabled) {
+            animation: downloadZipBlink 1.8s infinite ease-in-out;
+        }
+
+        #downloadFilesBtn:not(:disabled) {
+            animation: downloadFilesBlink 1.8s infinite ease-in-out;
+        }
+
+        #downloadZipBtn:not(:disabled):hover,
+        #downloadFilesBtn:not(:disabled):hover {
+            animation: none;
+            transform: translateY(-2px);
+            filter: brightness(1.15);
         }
 
         .btn-sm {
@@ -585,6 +635,71 @@
             color: var(--badge-success-text);
         }
 
+        /* 0% Optimization Blue Badge & Custom Hover Tooltip */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .badge-info-blue {
+            color: var(--accent-blue);
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .badge-info-blue:hover {
+            background: rgba(14, 165, 233, 0.22);
+            border-color: var(--accent-blue);
+        }
+
+        .tooltip-container .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            width: 250px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            text-align: center;
+            border-radius: 12px;
+            padding: 10px 14px;
+            position: absolute;
+            z-index: 99;
+            bottom: 130%;
+            right: 0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color);
+            font-size: 0.82rem;
+            font-weight: 500;
+            line-height: 1.45;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            transform: translateY(4px);
+            pointer-events: none;
+        }
+
+        .tooltip-container .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--bg-card) transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .item-actions {
             display: flex;
             align-items: center;
@@ -597,17 +712,60 @@
 
         /* Mobile Responsive Adaptations */
         @media (max-width: 768px) {
-            body { padding: 12px 8px; }
-            .app-container { padding: 18px 14px; border-radius: 16px; }
-            .controls-card { padding: 16px 14px; }
-            .control-row { flex-direction: column; align-items: stretch; }
-            .quality-group { flex-direction: column; align-items: flex-start; width: 100%; }
-            .slider-wrapper { display: flex; width: 100%; gap: 10px; align-items: center; }
-            input[type="range"] { flex: 1; width: 100%; }
-            .preset-pills { width: 100%; display: flex; }
-            .preset-btn { flex: 1; text-align: center; }
-            .btn { width: 100%; }
-            .download-actions-group { flex-direction: column; width: 100%; }
+            body {
+                padding: 12px 8px;
+            }
+
+            .app-container {
+                padding: 18px 14px;
+                border-radius: 16px;
+            }
+
+            .controls-card {
+                padding: 16px 14px;
+            }
+
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .quality-group {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            .slider-wrapper {
+                display: flex;
+                width: 100%;
+                gap: 10px;
+                align-items: center;
+            }
+
+            input[type="range"] {
+                flex: 1;
+                width: 100%;
+            }
+
+            .preset-pills {
+                width: 100%;
+                display: flex;
+            }
+
+            .preset-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .download-actions-group {
+                flex-direction: column;
+                width: 100%;
+            }
 
             /* Mobile Queue Card Layout: Circular Gauge stays on the SIDE of Filename/Metrics! */
             .queue-item {
@@ -631,6 +789,220 @@
                 gap: 8px;
             }
         }
+
+        /* COMPARE MODAL LIGHTBOX STYLES */
+        .compare-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(9, 13, 22, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+
+        .compare-modal-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .compare-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-surface);
+        }
+
+        .compare-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .compare-filename {
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 400px;
+        }
+
+        .compare-close-btn {
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--accent-rose);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .compare-close-btn:hover {
+            background: var(--accent-rose);
+            color: #ffffff;
+        }
+
+        .compare-modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-body);
+        }
+
+        /* Split Screen Viewer Container */
+        .split-view-container {
+            position: relative;
+            width: 100%;
+            height: 55vh;
+            max-height: 550px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            user-select: none;
+            cursor: ew-resize;
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%),
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%),
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        [data-theme="light"] .split-view-container {
+            background-image: linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+                              linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+                              linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+        }
+
+        .split-pane {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .compare-modal-container img,
+        .split-pane img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+            image-orientation: none !important;
+        }
+
+        .split-pane-original {
+            z-index: 2;
+            width: 50%;
+            border-right: 2px solid var(--accent-blue);
+        }
+
+        .split-label-badge {
+            position: absolute;
+            top: 14px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+        .split-label-orig {
+            left: 14px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .split-label-comp {
+            right: 14px;
+            background: rgba(14, 165, 233, 0.9);
+            color: #ffffff;
+        }
+
+        .split-slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: var(--accent-blue);
+            z-index: 10;
+            transform: translateX(-50%);
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.8);
+            cursor: ew-resize;
+        }
+
+        .split-slider-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            color: #ffffff;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .compare-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -640,8 +1012,22 @@
         <!-- Top Theme Navigation -->
         <div class="nav-bar">
             <button id="themeToggleBtn" class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
-                <svg id="sunIcon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                <svg id="moonIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg id="sunIcon" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg id="moonIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
                 <span id="themeBtnLabel">Light Mode</span>
             </button>
         </div>
@@ -649,11 +1035,12 @@
         <!-- Header -->
         <header>
             <h1 class="app-title">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#headerGrad)" stroke-width="2.2">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#headerGrad)"
+                    stroke-width="2.2">
                     <defs>
                         <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#0ea5e9"/>
-                            <stop offset="100%" stop-color="#8b5cf6"/>
+                            <stop offset="0%" stop-color="#0ea5e9" />
+                            <stop offset="100%" stop-color="#8b5cf6" />
                         </linearGradient>
                     </defs>
                     <rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect>
@@ -679,8 +1066,8 @@
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
             </div>
-            <div class="upload-heading">Drop images here or click to browse</div>
-            <div class="upload-subtext">JPG, PNG, WEBP, GIF, BMP</div>
+            <div class="upload-heading" id="uploadHeading">Drop images here or click to browse</div>
+            <div class="upload-subtext" id="uploadSubtext">JPG, PNG, WEBP, GIF, BMP</div>
             <input type="file" id="fileInput" accept="image/*" multiple>
         </div>
 
@@ -707,7 +1094,8 @@
             </div>
 
             <div id="progressWrapper" class="hidden">
-                <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 4px;">
+                <div
+                    style="display: flex; justify-content: space-between; font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 4px;">
                     <span id="progressText">Processing...</span>
                     <span id="progressPercent">0%</span>
                 </div>
@@ -750,7 +1138,8 @@
                 <div class="summary-stat-card highlight">
                     <div id="totalSavingsGauge"></div>
                     <div class="summary-stat-info">
-                        <span class="summary-stat-val" id="totalSavingsVal" style="color: var(--accent-emerald);">0 KB</span>
+                        <span class="summary-stat-val" id="totalSavingsVal" style="color: var(--accent-emerald);">0
+                            KB</span>
                         <span class="summary-stat-label">Saved</span>
                     </div>
                 </div>
@@ -759,6 +1148,49 @@
 
         <!-- Queue List -->
         <div class="image-queue-list" id="imageList"></div>
+    </div>
+
+    <!-- Compare Split-Screen Modal -->
+    <div id="compareModal" class="compare-modal-backdrop hidden" onclick="if(event.target === this) closeCompareModal()">
+        <div class="compare-modal-container">
+            <div class="compare-modal-header">
+                <div class="compare-title-group">
+                    <span style="font-size: 1.2rem;">👁️</span>
+                    <div class="compare-filename" id="compareFilename">image.jpg</div>
+                </div>
+                <button class="compare-close-btn" onclick="closeCompareModal()" title="Close (Esc)">✕</button>
+            </div>
+            <div class="compare-modal-body">
+                <div class="split-view-container" id="splitViewContainer">
+                    <span class="split-label-badge split-label-orig" id="compareOrigLabel">Original: 0 KB</span>
+                    <span class="split-label-badge split-label-comp" id="compareCompLabel">Compressed: 0 KB</span>
+
+                    <!-- Compressed Image Pane (Full Width Underneath) -->
+                    <div class="split-pane">
+                        <img id="compareImgComp" alt="Compressed Preview">
+                    </div>
+
+                    <!-- Original Image Pane (Clipped Overlay On Left Side) -->
+                    <div class="split-pane split-pane-original" id="splitPaneOriginal">
+                        <img id="compareImgOrig" alt="Original Preview">
+                    </div>
+
+                    <!-- Draggable Divider Line & Handle Knob -->
+                    <div class="split-slider-handle" id="splitSliderHandle">
+                        <div class="split-slider-knob">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="compare-modal-footer">
+                <span>💡 Drag the divider line back & forth to compare visual quality</span>
+                <button class="btn btn-sm btn-success" id="compareDownloadBtn">📦 Download</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -792,7 +1224,22 @@
         const totalSavingsVal = document.getElementById('totalSavingsVal');
         const totalSavingsGauge = document.getElementById('totalSavingsGauge');
 
+        const uploadHeading = document.getElementById('uploadHeading');
+        const uploadSubtext = document.getElementById('uploadSubtext');
+
         let imageQueue = [];
+
+        function updateDropZoneText() {
+            if (!uploadHeading || !uploadSubtext) return;
+
+            if (imageQueue.length > 0) {
+                uploadHeading.innerText = 'Drop More images here or click to browse';
+                uploadSubtext.innerText = `JPG, PNG, WEBP, GIF, BMP (${imageQueue.length} ${imageQueue.length === 1 ? 'image' : 'images'} added)`;
+            } else {
+                uploadHeading.innerText = 'Drop images here or click to browse';
+                uploadSubtext.innerText = 'JPG, PNG, WEBP, GIF, BMP';
+            }
+        }
 
         // Theme Switcher Logic
         function initTheme() {
@@ -822,11 +1269,18 @@
 
         initTheme();
 
-        // Quality Slider Listener
+        // Quality Slider Listener with 60fps smooth RAF throttling
+        let isQualityRAF = false;
         qualitySlider.addEventListener('input', () => {
-            qualityVal.innerText = qualitySlider.value + '%';
-            updatePresetButtons(parseInt(qualitySlider.value));
-            hideSummaryUntilProcessed();
+            if (!isQualityRAF) {
+                isQualityRAF = true;
+                requestAnimationFrame(() => {
+                    qualityVal.innerText = qualitySlider.value + '%';
+                    updatePresetButtons(parseInt(qualitySlider.value));
+                    hideSummaryUntilProcessed();
+                    isQualityRAF = false;
+                });
+            }
         });
 
         window.setQuality = function (val) {
@@ -949,6 +1403,7 @@
             downloadFilesBtn.disabled = true;
 
             loadThumbnailsInBatches(newItems);
+            updateDropZoneText();
         }
 
         async function loadThumbnailsInBatches(items) {
@@ -1002,6 +1457,7 @@
             </div>
 
             <div class="item-actions">
+                <button id="preview-btn-${item.id}" class="btn btn-sm btn-blue item-preview-btn hidden" onclick="openCompareModal('${item.id}')">👁️ Compare</button>
                 <button id="dl-btn-${item.id}" class="btn btn-sm btn-success item-dl-btn hidden" onclick="downloadSingleItem('${item.id}')">Download</button>
                 <button class="btn btn-danger btn-cross" onclick="removeSingleItem('${item.id}')">✕</button>
             </div>
@@ -1114,77 +1570,135 @@
             totalSummaryBanner.classList.remove('hidden');
         }
 
-        async function loadImageSource(file) {
-            if ('createImageBitmap' in window) {
-                try {
-                    return await createImageBitmap(file);
-                } catch (e) {
-                    console.warn('createImageBitmap fallback:', e);
+        async function getExifOrientation(file) {
+            try {
+                if (typeof piexif === 'undefined' || (!file.type.includes('jpeg') && !file.type.includes('jpg') && !file.name.match(/\.(jpg|jpeg)$/i))) {
+                    return 1;
                 }
+                const arrayBuffer = await file.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+                let binaryStr = "";
+                const maxLen = Math.min(bytes.length, 128000);
+                for (let i = 0; i < maxLen; i++) {
+                    binaryStr += String.fromCharCode(bytes[i]);
+                }
+                const exifObj = piexif.load(binaryStr);
+                if (exifObj && exifObj["0th"] && exifObj["0th"][piexif.ImageIFD.Orientation]) {
+                    return parseInt(exifObj["0th"][piexif.ImageIFD.Orientation]) || 1;
+                }
+            } catch (e) {
+                // Fallback
             }
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                const url = URL.createObjectURL(file);
-                img.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve(img);
-                };
-                img.onerror = (err) => {
-                    URL.revokeObjectURL(url);
-                    reject(err);
-                };
-                img.src = url;
-            });
+            return 1;
         }
 
-        async function compressOnCanvas(imageSource, quality, targetMime = 'image/jpeg') {
-            const MAX_CANVAS_DIM = 4096;
-            let width = imageSource.width || imageSource.naturalWidth;
-            let height = imageSource.height || imageSource.naturalHeight;
+        async function drawAutoOrientedImageToCanvas(file) {
+            const orientation = await getExifOrientation(file);
 
-            if (!width || !height) {
-                if (typeof imageSource.close === 'function') imageSource.close();
-                throw new Error("Invalid image dimensions");
+            let imgSource = null;
+            let isBitmap = false;
+
+            if ('createImageBitmap' in window) {
+                try {
+                    // Load raw unoriented bitmap matrix
+                    imgSource = await createImageBitmap(file, { imageOrientation: 'none' });
+                    isBitmap = true;
+                } catch (e) {
+                    try {
+                        imgSource = await createImageBitmap(file);
+                        isBitmap = true;
+                    } catch (err) {
+                        imgSource = null;
+                    }
+                }
             }
 
-            if (width > MAX_CANVAS_DIM || height > MAX_CANVAS_DIM) {
-                if (width > height) {
-                    height = Math.round((height * MAX_CANVAS_DIM) / width);
-                    width = MAX_CANVAS_DIM;
+            if (!imgSource) {
+                imgSource = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(file);
+                    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+                    img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
+                    img.src = url;
+                });
+            }
+
+            let srcW = imgSource.width || imgSource.naturalWidth;
+            let srcH = imgSource.height || imgSource.naturalHeight;
+
+            const MAX_DIM = 4096;
+            let targetW = srcW;
+            let targetH = srcH;
+            if (targetW > MAX_DIM || targetH > MAX_DIM) {
+                if (targetW > targetH) {
+                    targetH = Math.round((targetH * MAX_DIM) / targetW);
+                    targetW = MAX_DIM;
                 } else {
-                    width = Math.round((width * MAX_CANVAS_DIM) / height);
-                    height = MAX_CANVAS_DIM;
+                    targetW = Math.round((targetW * MAX_DIM) / targetH);
+                    targetH = MAX_DIM;
                 }
             }
 
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
             const ctx = canvas.getContext('2d', { willReadFrequently: false });
 
+            if (orientation === 6) {
+                // 90° CW
+                canvas.width = targetH;
+                canvas.height = targetW;
+                ctx.translate(targetH, 0);
+                ctx.rotate(90 * Math.PI / 180);
+                ctx.drawImage(imgSource, 0, 0, targetW, targetH);
+            } else if (orientation === 8) {
+                // 90° CCW (270° CW)
+                canvas.width = targetH;
+                canvas.height = targetW;
+                ctx.translate(0, targetW);
+                ctx.rotate(-90 * Math.PI / 180);
+                ctx.drawImage(imgSource, 0, 0, targetW, targetH);
+            } else if (orientation === 3) {
+                // 180°
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.translate(targetW, targetH);
+                ctx.rotate(180 * Math.PI / 180);
+                ctx.drawImage(imgSource, 0, 0, targetW, targetH);
+            } else {
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(imgSource, 0, 0, targetW, targetH);
+            }
+
+            if (isBitmap && typeof imgSource.close === 'function') {
+                imgSource.close();
+            }
+
+            return canvas;
+        }
+
+        async function compressOnCanvas(file, quality, targetMime = 'image/jpeg') {
+            const canvas = await drawAutoOrientedImageToCanvas(file);
+
             if (targetMime === 'image/jpeg') {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, width, height);
+                const bgCanvas = document.createElement('canvas');
+                bgCanvas.width = canvas.width;
+                bgCanvas.height = canvas.height;
+                const bgCtx = bgCanvas.getContext('2d');
+                bgCtx.fillStyle = '#ffffff';
+                bgCtx.fillRect(0, 0, canvas.width, canvas.height);
+                bgCtx.drawImage(canvas, 0, 0);
+
+                const blob = await new Promise(r => bgCanvas.toBlob(r, 'image/jpeg', quality));
+                canvas.width = 0; canvas.height = 0;
+                bgCanvas.width = 0; bgCanvas.height = 0;
+                if (!blob) throw new Error("Canvas compression failed");
+                return blob;
+            } else {
+                const blob = await new Promise(r => canvas.toBlob(r, targetMime, quality));
+                canvas.width = 0; canvas.height = 0;
+                if (!blob) throw new Error("Canvas compression failed");
+                return blob;
             }
-
-            ctx.drawImage(imageSource, 0, 0, width, height);
-
-            if (typeof imageSource.close === 'function') {
-                imageSource.close();
-            }
-
-            const blob = await new Promise((resolve) => {
-                canvas.toBlob((b) => resolve(b), targetMime, quality);
-            });
-
-            canvas.width = 0;
-            canvas.height = 0;
-
-            if (!blob) {
-                throw new Error("Canvas compression returned empty blob");
-            }
-
-            return blob;
         }
 
         async function compressPNGWithUPNG(file, quality) {
@@ -1192,34 +1706,12 @@
                 throw new Error("UPNG library not loaded");
             }
 
-            const imageSource = await loadImageSource(file);
-            let w = imageSource.width || imageSource.naturalWidth;
-            let h = imageSource.height || imageSource.naturalHeight;
-
-            const MAX_CANVAS_DIM = 4096;
-            if (w > MAX_CANVAS_DIM || h > MAX_CANVAS_DIM) {
-                if (w > h) {
-                    h = Math.round((h * MAX_CANVAS_DIM) / w);
-                    w = MAX_CANVAS_DIM;
-                } else {
-                    w = Math.round((w * MAX_CANVAS_DIM) / h);
-                    h = MAX_CANVAS_DIM;
-                }
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
+            const canvas = await drawAutoOrientedImageToCanvas(file);
+            const w = canvas.width;
+            const h = canvas.height;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(imageSource, 0, 0, w, h);
-
-            if (typeof imageSource.close === 'function') {
-                imageSource.close();
-            }
-
             const imgData = ctx.getImageData(0, 0, w, h);
-            canvas.width = 0;
-            canvas.height = 0;
+            canvas.width = 0; canvas.height = 0;
 
             let cnum = 0;
             if (quality < 0.98) {
@@ -1249,15 +1741,13 @@
                     finalMime = 'image/png';
                 } catch (err) {
                     console.warn('UPNG fallback to Canvas PNG:', err);
-                    const imageSource = await loadImageSource(item.fileObject);
-                    const blob = await compressOnCanvas(imageSource, quality, 'image/png');
+                    const blob = await compressOnCanvas(item.fileObject, quality, 'image/png');
                     const buffer = await blob.arrayBuffer();
                     finalUint8Array = new Uint8Array(buffer);
                     finalMime = 'image/png';
                 }
             } else if (isJpeg) {
-                const imageSource = await loadImageSource(item.fileObject);
-                const compressedBlob = await compressOnCanvas(imageSource, quality, 'image/jpeg');
+                const compressedBlob = await compressOnCanvas(item.fileObject, quality, 'image/jpeg');
 
                 try {
                     const originalBuffer = await item.fileObject.arrayBuffer();
@@ -1275,8 +1765,7 @@
                 }
                 finalMime = 'image/jpeg';
             } else {
-                const imageSource = await loadImageSource(item.fileObject);
-                const compressedBlob = await compressOnCanvas(imageSource, quality, targetMime);
+                const compressedBlob = await compressOnCanvas(item.fileObject, quality, targetMime);
                 const buffer = await compressedBlob.arrayBuffer();
                 finalUint8Array = new Uint8Array(buffer);
                 finalMime = targetMime;
@@ -1326,12 +1815,29 @@
                     const percent = Math.round(((compressedFile.size - item.size) / item.size) * 100);
                     savingsEl.innerHTML = `<span class="badge" style="color: var(--accent-rose); background: rgba(244, 63, 94, 0.12);">+${percent}%</span>`;
                 } else {
-                    savingsEl.innerHTML = `<span class="badge" style="color: var(--accent-blue); background: rgba(14, 165, 233, 0.12);">0%</span>`;
+                    savingsEl.innerHTML = `
+                        <div class="tooltip-container">
+                            <span class="badge-info-blue" title="This file is already fully optimized.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                0%
+                            </span>
+                            <div class="tooltip-text">
+                                This file is already fully optimized.
+                            </div>
+                        </div>
+                    `;
                 }
             }
 
             const dlBtn = document.getElementById(`dl-btn-${item.id}`);
             if (dlBtn) dlBtn.classList.remove('hidden');
+
+            const prevBtn = document.getElementById(`preview-btn-${item.id}`);
+            if (prevBtn) prevBtn.classList.remove('hidden');
         }
 
         function extractAppSegments(bytes) {
@@ -1353,9 +1859,45 @@
             return segments;
         }
 
+        function normalizeExifOrientation(segment) {
+            if (!segment || segment.length < 10 || segment[0] !== 0xFF || segment[1] !== 0xE1) return segment;
+            // Check for 'Exif\0\0' signature at offset 4
+            if (segment[4] === 0x45 && segment[5] === 0x78 && segment[6] === 0x69 && segment[7] === 0x66) {
+                try {
+                    if (typeof piexif !== 'undefined') {
+                        let binaryStr = "";
+                        for (let i = 0; i < segment.length; i++) {
+                            binaryStr += String.fromCharCode(segment[i]);
+                        }
+                        const exifObj = piexif.load(binaryStr);
+                        if (exifObj && exifObj["0th"]) {
+                            // Set EXIF Orientation to 1 (Top-Left / Upright) because Canvas already rasterized pixels upright
+                            exifObj["0th"][piexif.ImageIFD.Orientation] = 1;
+                            const newExifStr = piexif.dump(exifObj);
+                            const length = newExifStr.length + 2;
+                            const newSegment = new Uint8Array(2 + length);
+                            newSegment[0] = 0xFF;
+                            newSegment[1] = 0xE1;
+                            newSegment[2] = (length >> 8) & 0xFF;
+                            newSegment[3] = length & 0xFF;
+                            for (let i = 0; i < newExifStr.length; i++) {
+                                newSegment[4 + i] = newExifStr.charCodeAt(i);
+                            }
+                            return newSegment;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("EXIF orientation normalization warning:", e);
+                }
+            }
+            return segment;
+        }
+
         function injectAppSegments(compressedBytes, appSegments) {
             if (!compressedBytes || compressedBytes.length < 2 || compressedBytes[0] !== 0xFF || compressedBytes[1] !== 0xD8) return compressedBytes;
             if (!appSegments || appSegments.length === 0) return compressedBytes;
+
+            const normalizedSegments = appSegments.map(s => normalizeExifOrientation(s));
 
             let offset = 2;
             while (offset < compressedBytes.length) {
@@ -1370,13 +1912,13 @@
             }
 
             let appTotalLength = 0;
-            appSegments.forEach(s => appTotalLength += s.length);
+            normalizedSegments.forEach(s => appTotalLength += s.length);
 
             const result = new Uint8Array(2 + appTotalLength + (compressedBytes.length - offset));
             result[0] = 0xFF; result[1] = 0xD8;
 
             let pos = 2;
-            appSegments.forEach(s => {
+            normalizedSegments.forEach(s => {
                 result.set(s, pos);
                 pos += s.length;
             });
@@ -1401,6 +1943,7 @@
             } else {
                 totalSummaryBanner.classList.add('hidden');
             }
+            updateDropZoneText();
         };
 
         clearAllBtn.addEventListener('click', function () {
@@ -1412,6 +1955,7 @@
             controlPanel.classList.add('hidden');
             progressWrapper.classList.add('hidden');
             totalSummaryBanner.classList.add('hidden');
+            updateDropZoneText();
         });
 
         downloadZipBtn.addEventListener('click', async function () {
@@ -1493,8 +2037,133 @@
             document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(url), 5000);
         };
+
+        /* COMPARE MODAL LIGHTBOX & SPLIT SLIDER LOGIC */
+        let activeCompareUrls = { orig: null, comp: null };
+        let isDraggingSplitSlider = false;
+
+        async function generateAutoOrientedBlobUrl(file) {
+            try {
+                const canvas = await drawAutoOrientedImageToCanvas(file);
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+                canvas.width = 0; canvas.height = 0;
+                if (blob) return URL.createObjectURL(blob);
+            } catch (e) {
+                console.warn('Auto-orient preview fallback:', e);
+            }
+            return URL.createObjectURL(file);
+        }
+
+        async function openCompareModal(id) {
+            const item = imageQueue.find(i => i.id === id);
+            if (!item || !item.finalBlob) return;
+
+            const modal = document.getElementById('compareModal');
+            const filenameEl = document.getElementById('compareFilename');
+            const origLabelEl = document.getElementById('compareOrigLabel');
+            const compLabelEl = document.getElementById('compareCompLabel');
+            const imgOrig = document.getElementById('compareImgOrig');
+            const imgComp = document.getElementById('compareImgComp');
+            const dlBtn = document.getElementById('compareDownloadBtn');
+
+            filenameEl.innerText = item.name;
+
+            if (activeCompareUrls.orig) URL.revokeObjectURL(activeCompareUrls.orig);
+            if (activeCompareUrls.comp) URL.revokeObjectURL(activeCompareUrls.comp);
+
+            activeCompareUrls.orig = await generateAutoOrientedBlobUrl(item.fileObject);
+            activeCompareUrls.comp = URL.createObjectURL(item.finalBlob);
+
+            imgOrig.src = activeCompareUrls.orig;
+            imgComp.src = activeCompareUrls.comp;
+
+            origLabelEl.innerText = `Original: ${formatBytes(item.size)}`;
+
+            if (item.finalBlob.size < item.size) {
+                const savedBytes = item.size - item.finalBlob.size;
+                const percent = Math.round((savedBytes / item.size) * 100);
+                compLabelEl.innerText = `Compressed: ${formatBytes(item.finalBlob.size)} (-${percent}%)`;
+            } else {
+                compLabelEl.innerText = `Compressed: ${formatBytes(item.finalBlob.size)} (0%)`;
+            }
+
+            dlBtn.onclick = () => downloadSingleItem(id);
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                setSplitSliderPosition(50);
+            }, 50);
+        }
+
+        function closeCompareModal() {
+            const modal = document.getElementById('compareModal');
+            modal.classList.add('hidden');
+            if (activeCompareUrls.orig) { URL.revokeObjectURL(activeCompareUrls.orig); activeCompareUrls.orig = null; }
+            if (activeCompareUrls.comp) { URL.revokeObjectURL(activeCompareUrls.comp); activeCompareUrls.comp = null; }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeCompareModal();
+        });
+
+        function setSplitSliderPosition(percentage) {
+            const clampPercent = Math.max(0, Math.min(100, percentage));
+            const paneOrig = document.getElementById('splitPaneOriginal');
+            const handle = document.getElementById('splitSliderHandle');
+            const imgOrig = document.getElementById('compareImgOrig');
+            const imgComp = document.getElementById('compareImgComp');
+            const container = document.getElementById('splitViewContainer');
+
+            if (paneOrig && handle && container) {
+                paneOrig.style.width = clampPercent + '%';
+                handle.style.left = clampPercent + '%';
+                const containerW = container.offsetWidth + 'px';
+                if (imgOrig) imgOrig.style.width = containerW;
+                if (imgComp) imgComp.style.width = containerW;
+            }
+        }
+
+        const splitViewContainer = document.getElementById('splitViewContainer');
+
+        function handleSplitMove(clientX) {
+            if (!splitViewContainer) return;
+            const rect = splitViewContainer.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const percentage = (x / rect.width) * 100;
+            setSplitSliderPosition(percentage);
+        }
+
+        if (splitViewContainer) {
+            splitViewContainer.addEventListener('mousedown', (e) => {
+                isDraggingSplitSlider = true;
+                handleSplitMove(e.clientX);
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (isDraggingSplitSlider) handleSplitMove(e.clientX);
+            });
+            window.addEventListener('mouseup', () => { isDraggingSplitSlider = false; });
+
+            splitViewContainer.addEventListener('touchstart', (e) => {
+                isDraggingSplitSlider = true;
+                if (e.touches.length) handleSplitMove(e.touches[0].clientX);
+            });
+            window.addEventListener('touchmove', (e) => {
+                if (isDraggingSplitSlider && e.touches.length) handleSplitMove(e.touches[0].clientX);
+            });
+            window.addEventListener('touchend', () => { isDraggingSplitSlider = false; });
+        }
+
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('splitViewContainer');
+            const imgOrig = document.getElementById('compareImgOrig');
+            const imgComp = document.getElementById('compareImgComp');
+            if (container) {
+                const containerW = container.offsetWidth + 'px';
+                if (imgOrig) imgOrig.style.width = containerW;
+                if (imgComp) imgComp.style.width = containerW;
+            }
+        });
     </script>
-
 </body>
-
 </html>
