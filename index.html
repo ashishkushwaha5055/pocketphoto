@@ -359,11 +359,14 @@
 
         /* Download Buttons Attention Blink Animation */
         @keyframes downloadZipBlink {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
                 filter: brightness(1);
             }
+
             50% {
                 transform: scale(1.04);
                 box-shadow: 0 0 22px rgba(16, 185, 129, 0.85);
@@ -372,11 +375,14 @@
         }
 
         @keyframes downloadFilesBlink {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
                 filter: brightness(1);
             }
+
             50% {
                 transform: scale(1.04);
                 box-shadow: 0 0 22px rgba(14, 165, 233, 0.85);
@@ -673,7 +679,7 @@
             border-radius: 20px;
             font-size: 0.86rem;
             font-weight: 700;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             z-index: 10000;
             opacity: 0;
             pointer-events: none;
@@ -904,8 +910,13 @@
                 font-size: 0.72rem;
             }
 
-            .split-label-orig { left: 8px; }
-            .split-label-comp { right: 8px; }
+            .split-label-orig {
+                left: 8px;
+            }
+
+            .split-label-comp {
+                right: 8px;
+            }
 
             .compare-zoom-badge {
                 bottom: 8px;
@@ -1045,18 +1056,18 @@
             user-select: none;
             cursor: ew-resize;
             background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%),
-                              linear-gradient(-45deg, #1e293b 25%, transparent 25%),
-                              linear-gradient(45deg, transparent 75%, #1e293b 75%),
-                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+                linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1e293b 75%),
+                linear-gradient(-45deg, transparent 75%, #1e293b 75%);
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
 
         [data-theme="light"] .split-view-container {
             background-image: linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
-                              linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
-                              linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
-                              linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+                linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
         }
 
         .split-pane {
@@ -1112,8 +1123,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 12px;
             width: 100%;
             padding-top: 4px;
+            flex-wrap: wrap;
         }
 
         .compare-unified-pill {
@@ -1141,7 +1154,61 @@
             color: var(--accent-blue);
         }
 
-        [data-theme="light"] .compare-unified-pill {
+        .compare-zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0 10px;
+            border-radius: 20px;
+            height: 32px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        .zoom-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.15s ease, opacity 0.15s ease;
+        }
+
+        .zoom-btn:hover:not(:disabled) {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .zoom-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .zoom-level-text {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            padding: 0 6px;
+            cursor: pointer;
+            min-width: 44px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .zoom-level-text:hover {
+            text-decoration: underline;
+        }
+
+        [data-theme="light"] .compare-unified-pill,
+        [data-theme="light"] .compare-zoom-controls {
             background: #ffffff;
             border-color: #cbd5e1;
             color: #0f172a;
@@ -1430,12 +1497,14 @@
     </div>
 
     <!-- Compare Split-Screen Modal -->
-    <div id="compareModal" class="compare-modal-backdrop hidden" onclick="if(event.target === this) closeCompareModal()">
+    <div id="compareModal" class="compare-modal-backdrop hidden"
+        onclick="if(event.target === this) closeCompareModal()">
         <div class="compare-modal-container">
             <div class="compare-modal-header">
                 <div class="compare-header-row">
                     <div class="compare-title-group">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="4"></rect>
                             <line x1="12" y1="3" x2="12" y2="21"></line>
                             <polyline points="9 10 7 12 9 14"></polyline>
@@ -1451,11 +1520,19 @@
                         <span class="pill-arrow">➔</span>
                         <span class="pill-comp">Compressed: 0 KB</span>
                     </div>
+
+                    <div class="compare-zoom-controls">
+                        <button class="zoom-btn" id="compareZoomOutBtn" onclick="zoomOutCompareModal()" title="Zoom Out (-)">−</button>
+                        <span class="zoom-level-text" id="compareZoomText" onclick="resetCompareModalZoom()" title="Click to reset zoom">100%</span>
+                        <button class="zoom-btn" id="compareZoomInBtn" onclick="zoomInCompareModal()" title="Zoom In (+)">+</button>
+                        <button class="zoom-btn reset-btn" id="compareZoomResetBtn" onclick="resetCompareModalZoom()" title="Reset Zoom (100%)">↺</button>
+                    </div>
                 </div>
             </div>
             <div class="compare-modal-body">
                 <div class="split-view-container" id="splitViewContainer">
-                    <div class="compare-zoom-badge hidden" id="compareZoomBadge" onclick="resetCompareModalZoom()" title="Click to reset zoom">100% ✕</div>
+                    <div class="compare-zoom-badge hidden" id="compareZoomBadge" onclick="resetCompareModalZoom()"
+                        title="Click to reset zoom">100% ✕</div>
 
                     <!-- Compressed Image Pane (Full Width Underneath) -->
                     <div class="split-pane">
@@ -1470,7 +1547,8 @@
                     <!-- Draggable Divider Line & Handle Knob -->
                     <div class="split-slider-handle" id="splitSliderHandle">
                         <div class="split-slider-knob">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
                                 <polyline points="15 18 9 12 15 6"></polyline>
                                 <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
@@ -1681,9 +1759,9 @@
             // Deduplication: Discard duplicate files matching existing queue items
             let duplicateCount = 0;
             const nonDuplicateImages = validImages.filter(file => {
-                const isDuplicate = imageQueue.some(item => 
-                    item.name === file.name && 
-                    item.size === file.size && 
+                const isDuplicate = imageQueue.some(item =>
+                    item.name === file.name &&
+                    item.size === file.size &&
                     item.lastModified === file.lastModified
                 );
                 if (isDuplicate) duplicateCount++;
@@ -2458,10 +2536,10 @@
         function updateCompareModalZoom(smooth = true) {
             const imgOrig = document.getElementById('compareImgOrig');
             const imgComp = document.getElementById('compareImgComp');
-            const zoomBadge = document.getElementById('compareZoomBadge');
-            const zoomLabel = document.getElementById('compareZoomLabel');
-            const zoomInBtn = document.getElementById('zoomInBtn');
-            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomText = document.getElementById('compareZoomText');
+            const zoomInBtn = document.getElementById('compareZoomInBtn');
+            const zoomOutBtn = document.getElementById('compareZoomOutBtn');
+            const zoomResetBtn = document.getElementById('compareZoomResetBtn');
 
             const transitionStyle = smooth ? 'transform 0.15s ease-out' : 'none';
             const transformStr = (compareZoomLevel === 1 && comparePanX === 0 && comparePanY === 0)
@@ -2483,24 +2561,27 @@
             if (zoomOutBtn) {
                 zoomOutBtn.disabled = (compareZoomLevel <= 1 && comparePanX === 0 && comparePanY === 0);
             }
-
-            const percent = Math.round(compareZoomLevel * 100);
-            if (zoomLabel) {
-                zoomLabel.innerText = `${percent}%`;
+            if (zoomResetBtn) {
+                zoomResetBtn.disabled = (compareZoomLevel === 1 && comparePanX === 0 && comparePanY === 0);
             }
 
-            if (zoomBadge) {
-                zoomBadge.innerText = `${percent}% ✕`;
-                if (compareZoomLevel > 1 || comparePanX !== 0 || comparePanY !== 0) {
-                    zoomBadge.classList.remove('hidden');
-                } else {
-                    zoomBadge.classList.add('hidden');
-                }
+            const percent = Math.round(compareZoomLevel * 100);
+            if (zoomText) {
+                zoomText.innerText = `${percent}%`;
             }
         }
 
         window.zoomInCompareModal = function () {
             compareZoomLevel = Math.min(8, parseFloat((compareZoomLevel + 0.5).toFixed(2)));
+            updateCompareModalZoom(true);
+        };
+
+        window.zoomOutCompareModal = function () {
+            compareZoomLevel = Math.max(1, parseFloat((compareZoomLevel - 0.5).toFixed(2)));
+            if (compareZoomLevel === 1) {
+                comparePanX = 0;
+                comparePanY = 0;
+            }
             updateCompareModalZoom(true);
         };
 
@@ -2721,4 +2802,5 @@
         });
     </script>
 </body>
+
 </html>
